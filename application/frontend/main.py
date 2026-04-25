@@ -9,46 +9,46 @@ HEALTH_URL = f"{BACKEND_URL}/health"
 REQUEST_TIMEOUT = 30
 
 NUMERIC_FIELDS = {
-    "bulk_density": {"label": "Bulk Density", "min_value": 0.7, "max_value": 1.6, "value": 1.2, "step": 0.1},
-    "organic_matter_pct": {"label": "Organic Matter (%)", "min_value": 1.2, "max_value": 18.0, "value": 3.0, "step": 0.1},
-    "cation_exchange_capacity": {"label": "Cation Exchange Capacity", "min_value": 5.0, "max_value": 40.0, "value": 15.0, "step": 0.1},
-    "salinity_ec": {"label": "Salinity EC", "min_value": 0.2, "max_value": 4.0, "value": 0.5, "step": 0.1},
-    "buffering_capacity": {"label": "Buffering Capacity", "min_value": 0.3, "max_value": 0.9, "value": 0.7, "step": 0.1},
-    "soil_moisture_pct": {"label": "Soil Moisture (%)", "min_value": 5.0, "max_value": 70.0, "value": 35.0, "step": 0.1},
-    "moisture_limit_dry": {"label": "Moisture Limit Dry", "min_value": 8.0, "max_value": 30.0, "value": 16.0, "step": 0.1},
-    "moisture_limit_wet": {"label": "Moisture Limit Wet", "min_value": 28.0, "max_value": 65.0, "value": 42.0, "step": 0.1},
-    "soil_temp_c": {"label": "Soil Temperature (C)", "min_value": 10.0, "max_value": 40.0, "value": 25.0, "step": 0.1},
-    "air_temp_c": {"label": "Air Temperature (C)", "min_value": 7.0, "max_value": 49.6, "value": 28.0, "step": 0.1},
-    "light_intensity_par": {"label": "Light Intensity PAR", "min_value": 200.0, "max_value": 1200.0, "value": 700.0, "step": 1.0},
-    "soil_ph": {"label": "Soil pH", "min_value": 4.0, "max_value": 8.8, "value": 6.5, "step": 0.1},
-    "ph_stress_flag": {"label": "pH Stress Flag", "min_value": 0, "max_value": 1, "value": 0, "step": 1},
-    "nitrogen_ppm": {"label": "Nitrogen (ppm)", "min_value": 20.0, "max_value": 220.0, "value": 100.0, "step": 0.1},
-    "phosphorus_ppm": {"label": "Phosphorus (ppm)", "min_value": 10.0, "max_value": 159.0, "value": 50.0, "step": 0.1},
-    "potassium_ppm": {"label": "Potassium (ppm)", "min_value": 20.0, "max_value": 220.0, "value": 110.0, "step": 0.1},
+    "bulk_density": {"label": "Bulk Density\n(Kepadatan Tanah)", "min_value": 0.7, "max_value": 1.6, "value": 1.5, "step": 0.1},
+    "organic_matter_pct": {"label": "Organic Matter (%)\n(Bahan Organik)", "min_value": 1.2, "max_value": 18.0, "value": 2.0, "step": 0.1},
+    "cation_exchange_capacity": {"label": "Cation Exchange Capacity\n(Kapasitas Tukar Kation)", "min_value": 5.0, "max_value": 40.0, "value": 8.0, "step": 0.1},
+    "salinity_ec": {"label": "Salinity EC\n(Salinitas Tanah)", "min_value": 0.2, "max_value": 4.0, "value": 0.3, "step": 0.1},
+    "buffering_capacity": {"label": "Buffering Capacity\n(Kapasitas Penyangga Tanah)", "min_value": 0.3, "max_value": 0.9, "value": 0.4, "step": 0.1},
+    "soil_moisture_pct": {"label": "Soil Moisture (%)\n(Kelembapan Tanah)", "min_value": 5.0, "max_value": 70.0, "value": 44.9, "step": 0.1},
+    "moisture_limit_dry": {"label": "Moisture Limit Dry\n(Batas Kering Kelembapan)", "min_value": 8.0, "max_value": 30.0, "value": 12.0, "step": 0.1},
+    "moisture_limit_wet": {"label": "Moisture Limit Wet\n(Batas Basah Kelembapan)", "min_value": 28.0, "max_value": 65.0, "value": 35.0, "step": 0.1},
+    "soil_temp_c": {"label": "Soil Temperature (C)\n(Suhu Tanah)", "min_value": 10.0, "max_value": 40.0, "value": 30.3, "step": 0.1},
+    "air_temp_c": {"label": "Air Temperature (C)\n(Suhu Udara)", "min_value": 7.0, "max_value": 49.6, "value": 34.1, "step": 0.1},
+    "light_intensity_par": {"label": "Light Intensity PAR\n(Intensitas Cahaya PAR)", "min_value": 200.0, "max_value": 1200.0, "value": 408.0, "step": 1.0},
+    "soil_ph": {"label": "Soil pH\n(pH Tanah)", "min_value": 4.0, "max_value": 8.8, "value": 5.01, "step": 0.1},
+    "ph_stress_flag": {"label": "pH Stress Flag\n(Penanda Stres pH)", "min_value": 0, "max_value": 1, "value": 1, "step": 1},
+    "nitrogen_ppm": {"label": "Nitrogen (ppm)\n(Nitrogen)", "min_value": 20.0, "max_value": 220.0, "value": 84.5, "step": 0.1},
+    "phosphorus_ppm": {"label": "Phosphorus (ppm)\n(Fosfor)", "min_value": 10.0, "max_value": 159.0, "value": 83.6, "step": 0.1},
+    "potassium_ppm": {"label": "Potassium (ppm)\n(Kalium)", "min_value": 20.0, "max_value": 220.0, "value": 83.6, "step": 0.1},
 }
 CATEGORICAL_FIELDS = {
     "soil_type": {
-        "label": "Soil Type",
+        "label": "Soil Type\n(Jenis Tanah)",
         "options": ["Alluvial", "Chalky", "Clayey", "Laterite", "Loamy", "Peaty", "Saline", "Sandy", "Silty"],
-        "default": "Loamy",
+        "default": "Chalky",
     },
     "moisture_regime": {
-        "label": "Moisture Regime",
+        "label": "Moisture Regime\n(Kondisi Kelembapan)",
         "options": ["dry", "optimal", "waterlogged"],
-        "default": "optimal",
+        "default": "waterlogged",
     },
     "thermal_regime": {
-        "label": "Thermal Regime",
+        "label": "Thermal Regime\n(Kondisi Suhu)",
         "options": ["cold", "heat_stress", "optimal"],
-        "default": "optimal",
+        "default": "heat_stress",
     },
     "nutrient_balance": {
-        "label": "Nutrient Balance",
+        "label": "Nutrient Balance\n(Keseimbangan Nutrisi)",
         "options": ["deficient", "excessive", "optimal"],
-        "default": "optimal",
+        "default": "deficient",
     },
     "plant_category": {
-        "label": "Plant Category",
+        "label": "Plant Category\n(Kategori Tanaman)",
         "options": ["cereal", "legume", "vegetable"],
         "default": "vegetable",
     },
@@ -301,6 +301,15 @@ st.markdown(
         letter-spacing: 0.05em;
         margin-bottom: 1rem;
     }
+    [data-testid="stSidebar"] .status-badge {
+        width: 100%;
+        justify-content: center;
+        padding: 0.7rem 1rem;
+        font-size: 0.95rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.14);
+    }
     .status-badge::before {
         content: "";
         width: 8px;
@@ -309,9 +318,29 @@ st.markdown(
         margin-right: 8px;
         background: currentColor;
     }
+    [data-testid="stSidebar"] .status-badge::before {
+        width: 10px;
+        height: 10px;
+        flex: 0 0 10px;
+    }
     .ready { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
     .warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
     .offline { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    [data-testid="stSidebar"] .status-badge.ready {
+        background: #dcfce7 !important;
+        color: #064e3b !important;
+        border: 1px solid #86efac !important;
+    }
+    [data-testid="stSidebar"] .status-badge.warning {
+        background: #fef3c7 !important;
+        color: #78350f !important;
+        border: 1px solid #fcd34d !important;
+    }
+    [data-testid="stSidebar"] .status-badge.offline {
+        background: #fee2e2 !important;
+        color: #7f1d1d !important;
+        border: 1px solid #fca5a5 !important;
+    }
     .info-card {
         background: #ffffff;
         border: 1px solid var(--line);

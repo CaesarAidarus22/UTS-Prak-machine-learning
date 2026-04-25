@@ -92,6 +92,30 @@ CATEGORICAL_OPTIONS = {
     "plant_category": ["cereal", "legume", "vegetable"],
 }
 
+SAMPLE_INPUT = {
+    "bulk_density": 1.2,
+    "organic_matter_pct": 3.0,
+    "cation_exchange_capacity": 15.0,
+    "salinity_ec": 0.5,
+    "buffering_capacity": 0.7,
+    "soil_moisture_pct": 35.0,
+    "moisture_limit_dry": 16.0,
+    "moisture_limit_wet": 42.0,
+    "soil_temp_c": 25.0,
+    "air_temp_c": 28.0,
+    "light_intensity_par": 700.0,
+    "soil_ph": 6.5,
+    "ph_stress_flag": 0,
+    "nitrogen_ppm": 100.0,
+    "phosphorus_ppm": 50.0,
+    "potassium_ppm": 110.0,
+    "soil_type": "Loamy",
+    "moisture_regime": "optimal",
+    "thermal_regime": "optimal",
+    "nutrient_balance": "optimal",
+    "plant_category": "vegetable",
+}
+
 model = None
 model_status = "Model has not been initialized yet."
 
@@ -219,6 +243,50 @@ def model_matches_expected_features(candidate_model) -> bool:
     return list(feature_names) == ALL_FEATURES
 
 
+def iter_pipeline_steps(estimator):
+    if hasattr(estimator, "steps"):
+        for _, step in estimator.steps:
+            yield step
+            yield from iter_pipeline_steps(step)
+
+    if hasattr(estimator, "transformers_"):
+        for _, transformer, _ in estimator.transformers_:
+            if transformer == "drop" or transformer == "passthrough":
+                continue
+            yield transformer
+            yield from iter_pipeline_steps(transformer)
+
+
+def patch_loaded_simple_imputers(candidate_model) -> bool:
+    patched = False
+    for step in iter_pipeline_steps(candidate_model):
+        if isinstance(step, SimpleImputer) and not hasattr(step, "_fill_dtype"):
+            statistics = getattr(step, "statistics_", None)
+            if statistics is not None:
+                step._fill_dtype = statistics.dtype
+            else:
+                step._fill_dtype = object if step.strategy == "most_frequent" else float
+            patched = True
+
+    return patched
+
+
+def validate_model_predicts(candidate_model) -> None:
+    sample_frame = pd.DataFrame([SAMPLE_INPUT], columns=ALL_FEATURES)
+    candidate_model.predict(sample_frame)
+
+
+def predict_with_compatibility_patch(candidate_model, input_frame: pd.DataFrame):
+    try:
+        return candidate_model.predict(input_frame)
+    except AttributeError as exc:
+        if "_fill_dtype" not in str(exc):
+            raise
+        if not patch_loaded_simple_imputers(candidate_model):
+            raise
+        return candidate_model.predict(input_frame)
+
+
 def train_model():
     if not DATASET_PATH.exists():
         raise FileNotFoundError(f"Dataset not found at {DATASET_PATH}")
@@ -265,11 +333,22 @@ def load_or_train_model(force_retrain: bool = False) -> None:
         if MODEL_PATH.exists() and not force_retrain:
             loaded_model = joblib.load(MODEL_PATH)
             if model_matches_expected_features(loaded_model):
-                model = loaded_model
-                model_status = f"Loaded model from {MODEL_PATH}"
-                return
+                patched_imputers = patch_loaded_simple_imputers(loaded_model)
+                try:
+                    validate_model_predicts(loaded_model)
+                except Exception as exc:
+                    model_status = (
+                        "Existing model could not run with the installed library versions "
+                        f"({exc}). Retraining model."
+                    )
+                else:
+                    compatibility_note = " with compatibility patch" if patched_imputers else ""
+                    model = loaded_model
+                    model_status = f"Loaded model from {MODEL_PATH}{compatibility_note}"
+                    return
 
-            model_status = "Existing model did not match the current feature set. Retraining model."
+            else:
+                model_status = "Existing model did not match the current feature set. Retraining model."
 
         model, training_status = train_model()
         model_status = f"Model was initialized by training a new pipeline: {training_status}"
@@ -300,7 +379,7 @@ def build_prediction_response(data: InputData) -> PredictionResponse:
 
     try:
         input_frame = data.to_frame()
-        prediction = int(model.predict(input_frame)[0])
+        prediction = int(predict_with_compatibility_patch(model, input_frame)[0])
 
         confidence = None
         if hasattr(model, "predict_proba"):
