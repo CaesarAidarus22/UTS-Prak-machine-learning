@@ -9,22 +9,22 @@ HEALTH_URL = f"{BACKEND_URL}/health"
 REQUEST_TIMEOUT = 30
 
 NUMERIC_FIELDS = {
-    "bulk_density": {"label": "Bulk Density", "min": 0.7, "max": 1.6, "default": 1.2, "step": 0.1},
-    "organic_matter_pct": {"label": "Organic Matter (%)", "min": 1.2, "max": 18.0, "default": 3.0, "step": 0.1},
-    "cation_exchange_capacity": {"label": "Cation Exchange Capacity", "min": 5.0, "max": 40.0, "default": 15.0, "step": 0.1},
-    "salinity_ec": {"label": "Salinity EC", "min": 0.2, "max": 4.0, "default": 0.5, "step": 0.1},
-    "buffering_capacity": {"label": "Buffering Capacity", "min": 0.3, "max": 0.9, "default": 0.7, "step": 0.1},
-    "soil_moisture_pct": {"label": "Soil Moisture (%)", "min": 5.0, "max": 70.0, "default": 35.0, "step": 0.1},
-    "moisture_limit_dry": {"label": "Moisture Limit Dry", "min": 8.0, "max": 30.0, "default": 16.0, "step": 0.1},
-    "moisture_limit_wet": {"label": "Moisture Limit Wet", "min": 28.0, "max": 65.0, "default": 42.0, "step": 0.1},
-    "soil_temp_c": {"label": "Soil Temperature (C)", "min": 10.0, "max": 40.0, "default": 25.0, "step": 0.1},
-    "air_temp_c": {"label": "Air Temperature (C)", "min": 7.0, "max": 49.6, "default": 28.0, "step": 0.1},
-    "light_intensity_par": {"label": "Light Intensity PAR", "min": 200.0, "max": 1200.0, "default": 700.0, "step": 1.0},
-    "soil_ph": {"label": "Soil pH", "min": 4.0, "max": 8.8, "default": 6.5, "step": 0.1},
-    "ph_stress_flag": {"label": "pH Stress Flag", "min": 0, "max": 1, "default": 0, "step": 1},
-    "nitrogen_ppm": {"label": "Nitrogen (ppm)", "min": 20.0, "max": 220.0, "default": 100.0, "step": 0.1},
-    "phosphorus_ppm": {"label": "Phosphorus (ppm)", "min": 10.0, "max": 159.0, "default": 50.0, "step": 0.1},
-    "potassium_ppm": {"label": "Potassium (ppm)", "min": 20.0, "max": 220.0, "default": 110.0, "step": 0.1},
+    "bulk_density": {"label": "Bulk Density", "min_value": 0.7, "max_value": 1.6, "value": 1.2, "step": 0.1},
+    "organic_matter_pct": {"label": "Organic Matter (%)", "min_value": 1.2, "max_value": 18.0, "value": 3.0, "step": 0.1},
+    "cation_exchange_capacity": {"label": "Cation Exchange Capacity", "min_value": 5.0, "max_value": 40.0, "value": 15.0, "step": 0.1},
+    "salinity_ec": {"label": "Salinity EC", "min_value": 0.2, "max_value": 4.0, "value": 0.5, "step": 0.1},
+    "buffering_capacity": {"label": "Buffering Capacity", "min_value": 0.3, "max_value": 0.9, "value": 0.7, "step": 0.1},
+    "soil_moisture_pct": {"label": "Soil Moisture (%)", "min_value": 5.0, "max_value": 70.0, "value": 35.0, "step": 0.1},
+    "moisture_limit_dry": {"label": "Moisture Limit Dry", "min_value": 8.0, "max_value": 30.0, "value": 16.0, "step": 0.1},
+    "moisture_limit_wet": {"label": "Moisture Limit Wet", "min_value": 28.0, "max_value": 65.0, "value": 42.0, "step": 0.1},
+    "soil_temp_c": {"label": "Soil Temperature (C)", "min_value": 10.0, "max_value": 40.0, "value": 25.0, "step": 0.1},
+    "air_temp_c": {"label": "Air Temperature (C)", "min_value": 7.0, "max_value": 49.6, "value": 28.0, "step": 0.1},
+    "light_intensity_par": {"label": "Light Intensity PAR", "min_value": 200.0, "max_value": 1200.0, "value": 700.0, "step": 1.0},
+    "soil_ph": {"label": "Soil pH", "min_value": 4.0, "max_value": 8.8, "value": 6.5, "step": 0.1},
+    "ph_stress_flag": {"label": "pH Stress Flag", "min_value": 0, "max_value": 1, "value": 0, "step": 1},
+    "nitrogen_ppm": {"label": "Nitrogen (ppm)", "min_value": 20.0, "max_value": 220.0, "value": 100.0, "step": 0.1},
+    "phosphorus_ppm": {"label": "Phosphorus (ppm)", "min_value": 10.0, "max_value": 159.0, "value": 50.0, "step": 0.1},
+    "potassium_ppm": {"label": "Potassium (ppm)", "min_value": 20.0, "max_value": 220.0, "value": 110.0, "step": 0.1},
 }
 CATEGORICAL_FIELDS = {
     "soil_type": {
@@ -82,6 +82,31 @@ def status_variant(health_data: dict | None) -> tuple[str, str]:
 
 st.set_page_config(page_title="Agro ML Predictor", page_icon="🌿", layout="wide")
 
+def numeric_input_config(field_name: str) -> dict:
+    field_config = dict(NUMERIC_FIELDS[field_name])
+    min_value = field_config.pop("min_value", field_config.pop("min", None))
+    max_value = field_config.pop("max_value", field_config.pop("max", None))
+    value = field_config.pop("value", field_config.pop("default", None))
+
+    if min_value is not None:
+        field_config["min_value"] = min_value
+    if max_value is not None:
+        field_config["max_value"] = max_value
+    if value is not None:
+        field_config["value"] = value
+
+    field_config.setdefault("key", field_name)
+    if min_value is not None and max_value is not None:
+        field_config.setdefault("help", f"Rentang input: {min_value} - {max_value}")
+
+    if field_config.get("step") == 1 and all(
+        isinstance(number, int) for number in (min_value, max_value, value) if number is not None
+    ):
+        field_config.setdefault("format", "%d")
+
+    return field_config
+
+
 st.markdown(
     """
     <style>
@@ -106,6 +131,10 @@ st.markdown(
     }
     h1, h2, h3 {
         color: var(--brand) !important;
+        font-weight: 800 !important;
+    }
+    h4 {
+        color: #0f5132 !important;
         font-weight: 800 !important;
     }
     [data-testid="stSidebar"] {
@@ -192,6 +221,12 @@ st.markdown(
         padding: 2rem;
         box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
     }
+    [data-testid="stForm"] h4 {
+        color: #0f5132 !important;
+        margin-top: 0.35rem !important;
+        margin-bottom: 1rem !important;
+        letter-spacing: -0.01em;
+    }
     [data-testid="stFormSubmitButton"] > button {
         background-color: #16a34a !important;
         color: #ffffff !important;
@@ -217,6 +252,23 @@ st.markdown(
         color: #0f172a !important;
         -webkit-text-fill-color: #0f172a !important;
         font-weight: 600 !important;
+        opacity: 1 !important;
+    }
+    div[data-baseweb="select"] div,
+    div[data-baseweb="select"] span,
+    div[data-baseweb="select"] svg {
+        color: #0f172a !important;
+        fill: #0f172a !important;
+        opacity: 1 !important;
+    }
+    .stSelectbox div[data-baseweb="select"] > div {
+        color: #0f172a !important;
+        background-color: #ffffff !important;
+    }
+    .stSelectbox div[data-baseweb="select"] [class*="singleValue"],
+    .stSelectbox div[data-baseweb="select"] [class*="placeholder"] {
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
         opacity: 1 !important;
     }
     div[data-baseweb="input"] input::placeholder,
@@ -374,28 +426,28 @@ with main_col:
         st.markdown("#### Properti Dasar Tanah")
         col1, col2 = st.columns(2, gap="medium")
         with col1:
-            bulk_density = st.number_input(**NUMERIC_FIELDS["bulk_density"])
-            organic_matter_pct = st.number_input(**NUMERIC_FIELDS["organic_matter_pct"])
-            cation_exchange_capacity = st.number_input(**NUMERIC_FIELDS["cation_exchange_capacity"])
-            salinity_ec = st.number_input(**NUMERIC_FIELDS["salinity_ec"])
+            bulk_density = st.number_input(**numeric_input_config("bulk_density"))
+            organic_matter_pct = st.number_input(**numeric_input_config("organic_matter_pct"))
+            cation_exchange_capacity = st.number_input(**numeric_input_config("cation_exchange_capacity"))
+            salinity_ec = st.number_input(**numeric_input_config("salinity_ec"))
         with col2:
-            buffering_capacity = st.number_input(**NUMERIC_FIELDS["buffering_capacity"])
-            soil_moisture_pct = st.number_input(**NUMERIC_FIELDS["soil_moisture_pct"])
-            moisture_limit_dry = st.number_input(**NUMERIC_FIELDS["moisture_limit_dry"])
-            moisture_limit_wet = st.number_input(**NUMERIC_FIELDS["moisture_limit_wet"])
+            buffering_capacity = st.number_input(**numeric_input_config("buffering_capacity"))
+            soil_moisture_pct = st.number_input(**numeric_input_config("soil_moisture_pct"))
+            moisture_limit_dry = st.number_input(**numeric_input_config("moisture_limit_dry"))
+            moisture_limit_wet = st.number_input(**numeric_input_config("moisture_limit_wet"))
 
         st.markdown("#### Suhu, Cahaya, dan Kimia Tanah")
         col3, col4 = st.columns(2, gap="medium")
         with col3:
-            soil_temp_c = st.number_input(**NUMERIC_FIELDS["soil_temp_c"])
-            air_temp_c = st.number_input(**NUMERIC_FIELDS["air_temp_c"])
-            light_intensity_par = st.number_input(**NUMERIC_FIELDS["light_intensity_par"])
-            soil_ph = st.number_input(**NUMERIC_FIELDS["soil_ph"])
+            soil_temp_c = st.number_input(**numeric_input_config("soil_temp_c"))
+            air_temp_c = st.number_input(**numeric_input_config("air_temp_c"))
+            light_intensity_par = st.number_input(**numeric_input_config("light_intensity_par"))
+            soil_ph = st.number_input(**numeric_input_config("soil_ph"))
         with col4:
-            ph_stress_flag = st.number_input(**NUMERIC_FIELDS["ph_stress_flag"])
-            nitrogen_ppm = st.number_input(**NUMERIC_FIELDS["nitrogen_ppm"])
-            phosphorus_ppm = st.number_input(**NUMERIC_FIELDS["phosphorus_ppm"])
-            potassium_ppm = st.number_input(**NUMERIC_FIELDS["potassium_ppm"])
+            ph_stress_flag = st.number_input(**numeric_input_config("ph_stress_flag"))
+            nitrogen_ppm = st.number_input(**numeric_input_config("nitrogen_ppm"))
+            phosphorus_ppm = st.number_input(**numeric_input_config("phosphorus_ppm"))
+            potassium_ppm = st.number_input(**numeric_input_config("potassium_ppm"))
 
         st.markdown("#### Konteks Kategorikal")
         col5, col6 = st.columns(2, gap="medium")
