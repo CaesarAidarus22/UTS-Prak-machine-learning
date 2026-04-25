@@ -8,11 +8,50 @@ API_URL = f"{BACKEND_URL}/predict"
 HEALTH_URL = f"{BACKEND_URL}/health"
 REQUEST_TIMEOUT = 30
 
-FIELD_LIMITS = {
-    "bulk_density": (0.0, 3.0, 1.2, 0.1),
-    "organic_matter_pct": (0.0, 100.0, 3.0, 0.1),
-    "cation_exchange_capacity": (0.0, 100.0, 15.0, 0.1),
-    "salinity_ec": (0.0, 50.0, 0.5, 0.1),
+NUMERIC_FIELDS = {
+    "bulk_density": {"label": "Bulk Density", "min": 0.7, "max": 1.6, "default": 1.2, "step": 0.1},
+    "organic_matter_pct": {"label": "Organic Matter (%)", "min": 1.2, "max": 18.0, "default": 3.0, "step": 0.1},
+    "cation_exchange_capacity": {"label": "Cation Exchange Capacity", "min": 5.0, "max": 40.0, "default": 15.0, "step": 0.1},
+    "salinity_ec": {"label": "Salinity EC", "min": 0.2, "max": 4.0, "default": 0.5, "step": 0.1},
+    "buffering_capacity": {"label": "Buffering Capacity", "min": 0.3, "max": 0.9, "default": 0.7, "step": 0.1},
+    "soil_moisture_pct": {"label": "Soil Moisture (%)", "min": 5.0, "max": 70.0, "default": 35.0, "step": 0.1},
+    "moisture_limit_dry": {"label": "Moisture Limit Dry", "min": 8.0, "max": 30.0, "default": 16.0, "step": 0.1},
+    "moisture_limit_wet": {"label": "Moisture Limit Wet", "min": 28.0, "max": 65.0, "default": 42.0, "step": 0.1},
+    "soil_temp_c": {"label": "Soil Temperature (C)", "min": 10.0, "max": 40.0, "default": 25.0, "step": 0.1},
+    "air_temp_c": {"label": "Air Temperature (C)", "min": 7.0, "max": 49.6, "default": 28.0, "step": 0.1},
+    "light_intensity_par": {"label": "Light Intensity PAR", "min": 200.0, "max": 1200.0, "default": 700.0, "step": 1.0},
+    "soil_ph": {"label": "Soil pH", "min": 4.0, "max": 8.8, "default": 6.5, "step": 0.1},
+    "ph_stress_flag": {"label": "pH Stress Flag", "min": 0, "max": 1, "default": 0, "step": 1},
+    "nitrogen_ppm": {"label": "Nitrogen (ppm)", "min": 20.0, "max": 220.0, "default": 100.0, "step": 0.1},
+    "phosphorus_ppm": {"label": "Phosphorus (ppm)", "min": 10.0, "max": 159.0, "default": 50.0, "step": 0.1},
+    "potassium_ppm": {"label": "Potassium (ppm)", "min": 20.0, "max": 220.0, "default": 110.0, "step": 0.1},
+}
+CATEGORICAL_FIELDS = {
+    "soil_type": {
+        "label": "Soil Type",
+        "options": ["Alluvial", "Chalky", "Clayey", "Laterite", "Loamy", "Peaty", "Saline", "Sandy", "Silty"],
+        "default": "Loamy",
+    },
+    "moisture_regime": {
+        "label": "Moisture Regime",
+        "options": ["dry", "optimal", "waterlogged"],
+        "default": "optimal",
+    },
+    "thermal_regime": {
+        "label": "Thermal Regime",
+        "options": ["cold", "heat_stress", "optimal"],
+        "default": "optimal",
+    },
+    "nutrient_balance": {
+        "label": "Nutrient Balance",
+        "options": ["deficient", "excessive", "optimal"],
+        "default": "optimal",
+    },
+    "plant_category": {
+        "label": "Plant Category",
+        "options": ["cereal", "legume", "vegetable"],
+        "default": "vegetable",
+    },
 }
 
 
@@ -51,7 +90,6 @@ st.markdown(
         --text-muted: #64748b;
         --bg-app: #f8fafc;
         --brand: #065f46;
-        --brand-dark: #103629;
         --sidebar: #182b22;
         --sidebar-soft: #21382d;
         --card: #ffffff;
@@ -62,7 +100,7 @@ st.markdown(
         color: var(--text-main);
     }
     .block-container {
-        max-width: 1160px;
+        max-width: 1240px;
         padding-top: 2rem;
         padding-bottom: 2rem;
     }
@@ -90,12 +128,6 @@ st.markdown(
         color: #bbf7d0 !important;
         background: rgba(255,255,255,0.08) !important;
     }
-    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3 {
-        font-size: 1.7rem !important;
-        font-weight: 800 !important;
-        color: #f8fafc !important;
-        margin-top: 0.1rem !important;
-    }
     [data-testid="stSidebar"] .stButton > button {
         background: rgba(255,255,255,0.08) !important;
         color: #ffffff !important;
@@ -104,18 +136,10 @@ st.markdown(
         font-weight: 600 !important;
         box-shadow: none !important;
     }
-    [data-testid="stSidebar"] .stButton > button * {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-    }
     [data-testid="stSidebar"] .stButton > button:hover {
         background: rgba(255,255,255,0.14) !important;
         color: #ffffff !important;
         border-color: rgba(255,255,255,0.34) !important;
-    }
-    [data-testid="stSidebar"] .stButton > button:hover * {
-        color: #ffffff !important;
-        fill: #ffffff !important;
     }
     .hero-card {
         background:
@@ -153,7 +177,13 @@ st.markdown(
         color: var(--text-muted) !important;
         font-size: 1.08rem;
         line-height: 1.75;
-        max-width: 720px;
+        max-width: 760px;
+    }
+    .subtitle {
+        color: #64748b !important;
+        margin-bottom: 1rem !important;
+        font-size: 1rem;
+        line-height: 1.7;
     }
     [data-testid="stForm"] {
         border-radius: 18px;
@@ -176,24 +206,21 @@ st.markdown(
         color: #ffffff !important;
         box-shadow: 0 6px 16px rgba(22, 163, 74, 0.24);
     }
-    .stButton > button {
-        border-radius: 10px;
-        font-weight: 600;
-        border-color: #cbd5e1;
-        color: var(--text-main);
-    }
-    div[data-baseweb="input"] > div {
+    div[data-baseweb="input"] > div,
+    div[data-baseweb="select"] > div {
         border-radius: 10px;
         border: 1px solid #cbd5e1;
         background-color: #ffffff;
     }
-    div[data-baseweb="input"] input {
+    div[data-baseweb="input"] input,
+    div[data-baseweb="select"] input {
         color: #0f172a !important;
         -webkit-text-fill-color: #0f172a !important;
         font-weight: 600 !important;
         opacity: 1 !important;
     }
-    div[data-baseweb="input"] input::placeholder {
+    div[data-baseweb="input"] input::placeholder,
+    div[data-baseweb="select"] input::placeholder {
         color: #475569 !important;
         -webkit-text-fill-color: #475569 !important;
         opacity: 1 !important;
@@ -204,17 +231,12 @@ st.markdown(
         opacity: 1 !important;
     }
     [data-testid="stWidgetLabel"],
-    [data-testid="stWidgetLabel"] p,
-    [data-testid="stMarkdownContainer"] p {
+    [data-testid="stWidgetLabel"] p {
         color: #0f172a !important;
         opacity: 1 !important;
     }
     [data-testid="stWidgetLabel"] p {
         font-weight: 700 !important;
-    }
-    div[data-baseweb="input"] > div:focus-within {
-        border-color: #16a34a;
-        box-shadow: 0 0 0 1px #16a34a;
     }
     .status-badge {
         display: inline-flex;
@@ -238,26 +260,6 @@ st.markdown(
     .ready { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
     .warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
     .offline { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    [data-testid="stSidebar"] .status-badge.ready {
-        background: #dcfce7 !important;
-        color: #14532d !important;
-        border: 1px solid #bbf7d0 !important;
-    }
-    [data-testid="stSidebar"] .status-badge.warning {
-        background: #fef3c7 !important;
-        color: #92400e !important;
-        border: 1px solid #fde68a !important;
-    }
-    [data-testid="stSidebar"] .status-badge.offline {
-        background: #fee2e2 !important;
-        color: #991b1b !important;
-        border: 1px solid #fecaca !important;
-    }
-    [data-testid="stSidebar"] .status-badge.ready::before,
-    [data-testid="stSidebar"] .status-badge.warning::before,
-    [data-testid="stSidebar"] .status-badge.offline::before {
-        background: currentColor !important;
-    }
     .info-card {
         background: #ffffff;
         border: 1px solid var(--line);
@@ -285,27 +287,10 @@ st.markdown(
         margin: 1rem 0 1.2rem 0;
         border-left: 6px solid;
     }
-    .result-success {
-        background: #f0fdf4;
-        border-color: #16a34a;
-        color: #14532d;
-    }
-    .result-danger {
-        background: #fef2f2;
-        border-color: #dc2626;
-        color: #7f1d1d;
-    }
-    .result-banner h3 {
-        margin: 0 0 0.45rem 0 !important;
-        font-size: 1.5rem;
-        color: inherit !important;
-    }
-    .result-banner p {
-        margin: 0;
-        font-size: 1rem;
-        color: inherit;
-        opacity: 0.96;
-    }
+    .result-success { background: #f0fdf4; border-color: #16a34a; color: #14532d; }
+    .result-danger { background: #fef2f2; border-color: #dc2626; color: #7f1d1d; }
+    .result-banner h3 { margin: 0 0 0.45rem 0 !important; font-size: 1.5rem; color: inherit !important; }
+    .result-banner p { margin: 0; font-size: 1rem; color: inherit; opacity: 0.96; }
     .result-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -328,25 +313,15 @@ st.markdown(
         margin-bottom: 0.4rem;
     }
     .result-card-value {
-        font-size: 1.25rem;
+        font-size: 1.18rem;
         color: #0f172a;
         font-weight: 800;
         line-height: 1.4;
         word-break: break-word;
     }
-    .subtitle {
-        color: #64748b !important;
-        margin-bottom: 1rem !important;
-        font-size: 1rem;
-        line-height: 1.7;
-    }
-    @media (max-width: 900px) {
-        .hero-title {
-            font-size: 2.3rem;
-        }
-        .result-grid {
-            grid-template-columns: 1fr;
-        }
+    @media (max-width: 980px) {
+        .hero-title { font-size: 2.4rem; }
+        .result-grid { grid-template-columns: 1fr; }
     }
     </style>
     """,
@@ -378,51 +353,92 @@ st.markdown(
         <div class="hero-kicker">Agro ML System</div>
         <h1 class="hero-title">Agro ML Predictor</h1>
         <p class="hero-text">
-            Sistem prediksi kelayakan kondisi tanah secara cepat dan akurat. Antarmuka ini dirancang
-            agar mudah dibaca, rapi saat presentasi, dan jelas saat menampilkan hasil prediksi.
+            Sistem prediksi kelayakan kondisi tanah berbasis fitur numerik dan kategorikal yang lebih lengkap,
+            agar hasil prediksi lebih informatif dan lebih mendekati kebutuhan analisis pada instruksi UTS.
         </p>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-main_col, side_col = st.columns([2, 1], gap="large")
+main_col, side_col = st.columns([2.1, 1], gap="large")
 
 with main_col:
     st.subheader("Parameter Tanah")
     st.markdown(
-        "<p class='subtitle'>Masukkan metrik tanah dalam rentang yang diizinkan untuk memulai prediksi.</p>",
+        "<p class='subtitle'>Masukkan parameter agro-environmental yang lebih lengkap untuk menghasilkan prediksi yang lebih kaya.</p>",
         unsafe_allow_html=True,
     )
 
     with st.form("prediction_form"):
-        form_left, form_right = st.columns(2, gap="medium")
+        st.markdown("#### Properti Dasar Tanah")
+        col1, col2 = st.columns(2, gap="medium")
+        with col1:
+            bulk_density = st.number_input(**NUMERIC_FIELDS["bulk_density"])
+            organic_matter_pct = st.number_input(**NUMERIC_FIELDS["organic_matter_pct"])
+            cation_exchange_capacity = st.number_input(**NUMERIC_FIELDS["cation_exchange_capacity"])
+            salinity_ec = st.number_input(**NUMERIC_FIELDS["salinity_ec"])
+        with col2:
+            buffering_capacity = st.number_input(**NUMERIC_FIELDS["buffering_capacity"])
+            soil_moisture_pct = st.number_input(**NUMERIC_FIELDS["soil_moisture_pct"])
+            moisture_limit_dry = st.number_input(**NUMERIC_FIELDS["moisture_limit_dry"])
+            moisture_limit_wet = st.number_input(**NUMERIC_FIELDS["moisture_limit_wet"])
 
-        with form_left:
-            bulk_density = st.number_input("Bulk Density", *FIELD_LIMITS["bulk_density"])
-            organic_matter_pct = st.number_input("Organic Matter (%)", *FIELD_LIMITS["organic_matter_pct"])
+        st.markdown("#### Suhu, Cahaya, dan Kimia Tanah")
+        col3, col4 = st.columns(2, gap="medium")
+        with col3:
+            soil_temp_c = st.number_input(**NUMERIC_FIELDS["soil_temp_c"])
+            air_temp_c = st.number_input(**NUMERIC_FIELDS["air_temp_c"])
+            light_intensity_par = st.number_input(**NUMERIC_FIELDS["light_intensity_par"])
+            soil_ph = st.number_input(**NUMERIC_FIELDS["soil_ph"])
+        with col4:
+            ph_stress_flag = st.number_input(**NUMERIC_FIELDS["ph_stress_flag"])
+            nitrogen_ppm = st.number_input(**NUMERIC_FIELDS["nitrogen_ppm"])
+            phosphorus_ppm = st.number_input(**NUMERIC_FIELDS["phosphorus_ppm"])
+            potassium_ppm = st.number_input(**NUMERIC_FIELDS["potassium_ppm"])
 
-        with form_right:
-            cation_exchange_capacity = st.number_input(
-                "Cation Exchange Capacity",
-                *FIELD_LIMITS["cation_exchange_capacity"],
+        st.markdown("#### Konteks Kategorikal")
+        col5, col6 = st.columns(2, gap="medium")
+        with col5:
+            soil_type = st.selectbox(
+                CATEGORICAL_FIELDS["soil_type"]["label"],
+                CATEGORICAL_FIELDS["soil_type"]["options"],
+                index=CATEGORICAL_FIELDS["soil_type"]["options"].index(CATEGORICAL_FIELDS["soil_type"]["default"]),
             )
-            salinity_ec = st.number_input("Salinity EC", *FIELD_LIMITS["salinity_ec"])
+            moisture_regime = st.selectbox(
+                CATEGORICAL_FIELDS["moisture_regime"]["label"],
+                CATEGORICAL_FIELDS["moisture_regime"]["options"],
+                index=CATEGORICAL_FIELDS["moisture_regime"]["options"].index(CATEGORICAL_FIELDS["moisture_regime"]["default"]),
+            )
+            thermal_regime = st.selectbox(
+                CATEGORICAL_FIELDS["thermal_regime"]["label"],
+                CATEGORICAL_FIELDS["thermal_regime"]["options"],
+                index=CATEGORICAL_FIELDS["thermal_regime"]["options"].index(CATEGORICAL_FIELDS["thermal_regime"]["default"]),
+            )
+        with col6:
+            nutrient_balance = st.selectbox(
+                CATEGORICAL_FIELDS["nutrient_balance"]["label"],
+                CATEGORICAL_FIELDS["nutrient_balance"]["options"],
+                index=CATEGORICAL_FIELDS["nutrient_balance"]["options"].index(CATEGORICAL_FIELDS["nutrient_balance"]["default"]),
+            )
+            plant_category = st.selectbox(
+                CATEGORICAL_FIELDS["plant_category"]["label"],
+                CATEGORICAL_FIELDS["plant_category"]["options"],
+                index=CATEGORICAL_FIELDS["plant_category"]["options"].index(CATEGORICAL_FIELDS["plant_category"]["default"]),
+            )
 
         submit = st.form_submit_button("Jalankan Prediksi", use_container_width=True)
 
 with side_col:
     st.subheader("System Status")
     st.markdown(
-        "<p class='subtitle'>Ringkasan kesiapan model dan sistem.</p>",
+        "<p class='subtitle'>Ringkasan kesiapan model dan jumlah fitur yang dipakai oleh sistem.</p>",
         unsafe_allow_html=True,
     )
-
     st.markdown(
         f"<div class='status-badge {state_class}'>{state_label}</div>",
         unsafe_allow_html=True,
     )
-
     if st.session_state.health_data:
         health_data = st.session_state.health_data
         st.markdown(
@@ -435,9 +451,14 @@ with side_col:
                 <div class="info-label">Dataset</div>
                 <div class="info-val">{dataset_status}</div>
             </div>
+            <div class="info-card">
+                <div class="info-label">Feature Count</div>
+                <div class="info-val">{feature_count} fitur</div>
+            </div>
             """.format(
                 model_status="Loaded" if health_data.get("model_loaded") else "Not Ready",
                 dataset_status="Available" if health_data.get("dataset_exists") else "Missing",
+                feature_count=len(health_data.get("features", [])),
             ),
             unsafe_allow_html=True,
         )
@@ -450,17 +471,32 @@ if submit:
         "organic_matter_pct": organic_matter_pct,
         "cation_exchange_capacity": cation_exchange_capacity,
         "salinity_ec": salinity_ec,
+        "buffering_capacity": buffering_capacity,
+        "soil_moisture_pct": soil_moisture_pct,
+        "moisture_limit_dry": moisture_limit_dry,
+        "moisture_limit_wet": moisture_limit_wet,
+        "soil_temp_c": soil_temp_c,
+        "air_temp_c": air_temp_c,
+        "light_intensity_par": light_intensity_par,
+        "soil_ph": soil_ph,
+        "ph_stress_flag": int(ph_stress_flag),
+        "nitrogen_ppm": nitrogen_ppm,
+        "phosphorus_ppm": phosphorus_ppm,
+        "potassium_ppm": potassium_ppm,
+        "soil_type": soil_type,
+        "moisture_regime": moisture_regime,
+        "thermal_regime": thermal_regime,
+        "nutrient_balance": nutrient_balance,
+        "plant_category": plant_category,
     }
 
     with st.spinner("Menjalankan prediksi..."):
         try:
             response = requests.post(API_URL, json=payload, timeout=REQUEST_TIMEOUT)
-
             if response.ok:
                 result = response.json()
                 prediction = result.get("prediction")
                 confidence = result.get("confidence")
-
                 banner_class = "result-success" if prediction == 0 else "result-danger"
                 banner_title = (
                     "Kondisi Tanah: Suitable"
@@ -468,14 +504,13 @@ if submit:
                     else "Kondisi Tanah: Not Suitable"
                 )
                 banner_copy = (
-                    "Kondisi tanah ini diprediksi sangat baik dan memenuhi standar untuk mendukung pertumbuhan tanaman."
+                    "Kondisi tanah ini diprediksi mendukung pertumbuhan tanaman berdasarkan kombinasi fitur tanah, kelembapan, suhu, nutrien, dan konteks kategorikal."
                     if prediction == 0
-                    else "Kondisi tanah ini kurang ideal. Diperlukan penanganan lebih lanjut sebelum digunakan untuk penanaman."
+                    else "Kondisi tanah ini diprediksi kurang ideal berdasarkan kombinasi fitur tanah, kelembapan, suhu, nutrien, dan konteks kategorikal."
                 )
 
                 st.markdown("---")
                 st.subheader("Hasil Prediksi")
-
                 st.markdown(
                     f"""
                     <div class="result-banner {banner_class}">
@@ -485,7 +520,6 @@ if submit:
                     """,
                     unsafe_allow_html=True,
                 )
-
                 st.markdown(
                     f"""
                     <div class="result-grid">
@@ -505,7 +539,6 @@ if submit:
                     """,
                     unsafe_allow_html=True,
                 )
-
                 with st.expander("Lihat payload"):
                     st.json(payload)
             else:
